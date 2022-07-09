@@ -24,5 +24,11 @@ namespace ManagmentLayer.Managments
             var res = await resolver.Resolve<AddUserCommand>().Execute(user);
             return res;
         }
+
+        public async Task<LoginResponseUserDto> LoginUser(LoginUserDto user)
+        {
+            var res = await resolver.Resolve<LoginUserCommand>().Execute(user);
+            return res;
+        }
     }
 }

@@ -2,6 +2,7 @@
 using AutoMapper;
 using DomainModel.Dtos.User;
 using DomainModel.Entities;
+using Infrastructure.Exceptions;
 using Infrastructure.Interfaces;
 using ManagerLayer;
 using Services;
@@ -18,19 +19,30 @@ namespace ManagmentLayer.Commands
         private readonly UserManager userManager;
         private readonly IMapper mapper;
         private readonly TokenService tokenService;
+        private readonly HashingService hashingService;
 
-        public AddUserCommand(UserManager userManager, IMapper mapper, TokenService tokenService)
+        public AddUserCommand(UserManager userManager, IMapper mapper, TokenService tokenService,HashingService hashingService)
         {
             this.userManager = userManager;
             this.mapper = mapper;
             this.tokenService = tokenService;
+            this.hashingService = hashingService;
         }
         public async Task<LoginResponseUserDto> Execute(RegisterUserDto user)
         {
-            User createdUser = await userManager.AddUser(user);
-            if (createdUser == null || createdUser.Id == 0) throw new Exception("error while creating the user");
-            var userResponse = mapper.Map<User, LoginResponseUserDto>(createdUser);
-            userResponse.Token = tokenService.CreateToken(createdUser);
+            bool isUserExists = await userManager.IsUserExists(user);
+            if (isUserExists) throw new StoreException("a user with this email already exists");
+
+            hashingService.HashPassword(user.Password, out byte[] hash, out byte[] salt);
+
+            User userToCreate = mapper.Map<RegisterUserDto, User>(user);
+            userToCreate.PasswordSalt = salt;
+            userToCreate.PasswordHash = hash;
+
+            await userManager.AddUser(userToCreate);
+
+            var userResponse = mapper.Map<User, LoginResponseUserDto>(userToCreate);
+            userResponse.Token = tokenService.CreateToken(userToCreate);
             return userResponse;
         }
     }

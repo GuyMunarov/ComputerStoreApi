@@ -19,21 +19,21 @@ namespace ManagerLayer
             this.mapper = mapper;
             this.hashingService = hashingService;
         }
-        public async Task<User> AddUser(RegisterUserDto user)
+        public async Task AddUser(User user)
+        {  
+            await this.repository.AddAsync(user);
+    
+        }
+
+
+        public async Task<bool> IsUserExists(RegisterUserDto user)
         {
-            if(await repository.GetFirstByCriteria<User>(x => x.Email == user.Email) != null) return null;
-            
-            hashingService.HashPassword(user.Password, out byte[] hash, out byte[] salt);
+            return await repository.GetFirstByCriteria<User>(x => x.Email == user.Email) != null;
+        }
 
-            User userToCreate = mapper.Map<RegisterUserDto,User>(user); // should move to command
-
-            userToCreate.PasswordSalt = salt;
-            userToCreate.PasswordHash = hash;
-            await this.repository.AddAsync(userToCreate);
-
-            return userToCreate;
-
-        
+        public async Task<User> GetUserByEmail(string email)
+        {
+            return await repository.GetFirstByCriteria<User>(x => x.Email == email);
         }
     }
 }

@@ -5,6 +5,7 @@ using ComputerStoreApi.AutoFacConfiguration;
 using Infrastructure.BootstrapingExtensions;
 using Infrastructure.DatabaseConfiguration;
 using Infrastructure.MappingProfiles;
+using Infrastructure.Middlewares;
 using Microsoft.Extensions.Caching.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,8 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.RegisterMod
 
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors();
 app.Services.MigrateDb();
 

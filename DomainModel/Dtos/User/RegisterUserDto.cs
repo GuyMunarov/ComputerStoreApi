@@ -18,7 +18,7 @@ namespace DomainModel.Dtos.User
         public string Email { get; set; }
 
         [Required]
-        [RegularExpression("^(?=.{6,}$)(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*\\W).*$")]
+        [RegularExpression("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")]
         public string Password { get; set; }
     }
 }
